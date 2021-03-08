@@ -1,12 +1,13 @@
 import mongoose from 'mongoose';
 import OrderCart from '../../dbmodels/orderModel.js';
-import {printKitchen, printBill,printFinalBill,printSplitBill,printVoid} from '../controllers/printJobs.js';
+import {printKitchen, printBill,printFinalBill,printSplitBill,printVoid, printBar} from '../controllers/printJobs.js';
 
 export const printAll_C = (req,res)=>{
     const order_id = req.body.order_id;
     OrderCart.findById(order_id)
     .then((cart)=>{
         printKitchen(cart);
+        printBar(cart);
     })
     res.status(200).json('Done')
 }
