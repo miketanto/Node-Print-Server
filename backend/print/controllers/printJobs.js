@@ -473,3 +473,68 @@ export const printBar = (cart)=>{
    }
  }
  
+
+ export const printChecker = (cart)=>{
+  cashier.clear();
+   const datetime = cart.datetime_data.time_in
+   const time_in = datetime.toLocaleTimeString();
+   const date_in = datetime.toLocaleDateString();
+   const table_no = cart.table;
+   const ticketNumber = cart.ticketNumber;
+   const width = cashier.getWidth();
+   const users = cart.customerusers;
+   cashier.alignCenter();
+   cashier.bold(true);  
+   cashier.println("Bale Lombok");
+   cashier.bold(false);  
+   cashier.tableCustom([                                      
+     { text:date_in, align:"LEFT", width:0.5},
+     { text:time_in, align:"RIGHT", width:0.5}
+   ]);
+   cashier.newLine();  
+   cashier.tableCustom([                                      
+     { text:`Table: ${table_no}`, align:"LEFT", width:0.4},
+     { text:`Ticket No: ${ticketNumber}`, align:"RIGHT", width:0.6}
+   ]);
+   cashier.alignCenter();
+   cashier.drawLine();  
+   users.forEach(user =>{
+     let name = user.alias_name;
+     cashier.alignLeft()
+     cashier.print(name);
+     cashier.newLine();
+     user.fooditems.forEach(fooditem=>{
+       if(fooditem.item_status!="Settled" && (fooditem.item.item_category.head=="Dessert"||fooditem.item.item_category.head=="Drinks")){
+         let item_name = fooditem.item.name;
+         item_name = item_name.toUpperCase();
+         cashier.alignLeft();
+         cashier.bold(true);
+         cashier.setTextSize(7);
+         cashier.print(`- ${fooditem.quantity} ${item_name}`);
+         cashier.setTextSize(1);
+         cashier.bold(false)
+         cashier.newLine();
+         if(fooditem.selected_properties){
+           cashier.alignLeft();
+           cashier.print(` *`)
+           const properties = Object.values(fooditem.selected_properties)
+           properties.forEach(property => {
+             cashier.print(`${property}|`)
+           });
+           cashier.newLine();
+         }
+       }
+     })
+     cashier.drawLine();
+   });
+   cashier.cut();
+ 
+   
+   
+   try {
+   let execute = cashier.execute()
+   console.error("Print done!");
+   } catch (error) {
+   console.log("Print failed:", error);
+   }
+ }
