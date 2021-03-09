@@ -8,6 +8,8 @@ let socket;
 
 function App() {
   const dispatch = useDispatch();
+  const [resetsocket, setResetSocket] = useState(false);
+
   const ENDPOINT = "http://3.0.183.70:8000/";
   useEffect(()=>{
     const name = 'printAdmin'
@@ -20,7 +22,8 @@ function App() {
     alert(error);
   }
 });
-},[ENDPOINT]);
+setTimeout(()=>{setResetSocket(!resetsocket)},30000);
+},[ENDPOINT,resetsocket]);
 
 useEffect(() => {
   socket.on('newPrintJob', (order_id,printType,fooditem_id,payment_data) => {
