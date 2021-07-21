@@ -1,22 +1,23 @@
 import logo from './logo.svg';
 import './App.css';
+import fs from 'fs'
 import io from 'socket.io-client';
 import {useDispatch} from 'react-redux';
 import React, {useState, useEffect} from 'react';
-import { printJob } from './store/actions/printActions';
+import { printJob, saveTaxFile } from './store/actions/printActions';
 let socket;
 
 function App() {
   const dispatch = useDispatch();
   const [resetsocket, setResetSocket] = useState(false);
 
-  const ENDPOINT = "http://3.0.183.70:8000/";
+  const ENDPOINT = "https://www.balelombok.net:8000/";
   useEffect(()=>{
     const name = 'printAdmin'
     console.log(name);
     const room = 'printComs';
     console.log(room);
-    socket = io(ENDPOINT);
+    socket = io(ENDPOINT,{"rejectUnauthorized": false, secure:false});
     socket.emit('join', {name,room}, (error) => {
     if(error) {
     alert(error);
@@ -30,6 +31,10 @@ useEffect(() => {
       console.log('In new Printjob')
       dispatch(printJob(order_id,printType,fooditem_id,payment_data));
   });
+  socket.on('SaveTaxFile', () => {
+    console.log('Saving Tax File')
+    dispatch(saveTaxFile());
+});
 }, []);
 
   return (

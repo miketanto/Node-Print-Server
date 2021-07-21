@@ -2,9 +2,16 @@ import PrintLib from 'node-thermal-printer'
 const ThermalPrinter = PrintLib.printer;
 const PrinterTypes = PrintLib.types;
 
+function randomString(length) {
+  return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+}
+
+let kitchenQueue = []
+let cashierQueue = []
+let barQueue = []
 let cashier = new ThermalPrinter({
     type: PrinterTypes.EPSON,
-    interface: 'tcp://192.168.0.120',
+    interface: 'tcp://192.168.0.130',
     width:40,
   });
 
@@ -16,11 +23,41 @@ let cashier = new ThermalPrinter({
 
   let kitchen = new ThermalPrinter({
     type: PrinterTypes.EPSON,
-    interface: 'tcp://192.168.0.140',
+    interface: 'tcp://192.168.0.130',
     width:40,
   });
 
-  export const printFinalBill = (cart,payment_data)=>{
+  export const queueCashier= (cart,payment_data,type)=>{
+    cashierQueue.push({
+      'id': randomString(8),
+      'type': type,
+      'cart':cart,
+      "payment_data":payment_data
+    })
+  }
+
+  
+  export const queueKitchen= (cart,type)=>{
+    kitchenQueue.push({
+      'id': randomString(8),
+      'type': type,
+      'cart':cart,
+    })
+  }
+  
+  export const queueBar= (cart,type)=>{
+    barQueue.push({
+      'id': randomString(8),
+      'type': type,
+      'cart':cart,
+    })
+  }
+
+  export const printFinalBill = async (cart,payment_data)=>{
+    let isConnected = await cashier.isPrinterConnected();
+    if(!isConnected){
+      queueCashier(cart,payment_data,printFinalBill);
+  }else{
    cashier.clear();
     const datetime = cart.datetime_data.time_in
     const time_in = datetime.toLocaleTimeString();
@@ -110,14 +147,19 @@ let cashier = new ThermalPrinter({
     
     
     try {
-    let execute =cashier.execute()
+    cashier.execute()
     console.error("Print done!");
     } catch (error) {
     console.log("Print failed:", error);
     }
+  }
 }
 
-export const printBill = (cart)=>{
+export const printBill = async(cart)=>{
+  let isConnected = await cashier.isPrinterConnected();
+  if(!isConnected){
+    queueCashier(cart,null,printBill);
+  }else{
    cashier.clear();
     const datetime = cart.datetime_data.time_in
     const time_in = datetime.toLocaleTimeString();
@@ -196,9 +238,14 @@ export const printBill = (cart)=>{
     } catch (error) {
     console.log("Print failed:", error);
     }
+  }
 }
 
-export const printSplitBill = (cart)=>{
+export const printSplitBill = async(cart)=>{
+  let isConnected = await cashier.isPrinterConnected();
+  if(!isConnected){
+    queueCashier(cart,null,printSplitBill);
+  }else{
  cashier.clear();
   const datetime = cart.datetime_data.time_in
   const time_in = datetime.toLocaleTimeString();
@@ -274,8 +321,13 @@ export const printSplitBill = (cart)=>{
   console.log("Print failed:", error);
   }
 }
+}
 
-export const printKitchen = (cart)=>{
+export const printKitchen = async(cart)=>{
+  let isConnected = await kitchen.isPrinterConnected();
+  if(!isConnected){
+    queueKitchen(cart,printKitchen);
+  }else{
  kitchen.clear();
   const datetime = cart.datetime_data.time_in
   const time_in = datetime.toLocaleTimeString();
@@ -328,7 +380,7 @@ export const printKitchen = (cart)=>{
     })
     kitchen.drawLine();
   });
-  kitchen.cut();
+  kitchen.partialCut();
 
   
   
@@ -339,8 +391,13 @@ export const printKitchen = (cart)=>{
   console.log("Print failed:", error);
   }
 }
+}
 
-export const printVoid = (cart,FoodItem_id)=>{
+export const printVoid = async (cart,FoodItem_id)=>{
+  let isConnected = await cashier.isPrinterConnected();
+  if(!isConnected){
+    queueCashier(cart,FoodItem_id,printVoid);
+  }else{
   console.log('called');
   cashier.clear();
   const datetime = cart.datetime_data.time_in
@@ -407,8 +464,13 @@ export const printVoid = (cart,FoodItem_id)=>{
   console.log("Print failed:", error);
   }
 }
+}
 
-export const printBar = (cart)=>{
+export const printBar = async(cart)=>{
+  let isConnected = await bar.isPrinterConnected();
+  if(!isConnected){
+    queueBar(cart,printBar);
+  }else{
   bar.clear();
    const datetime = cart.datetime_data.time_in
    const time_in = datetime.toLocaleTimeString();
@@ -471,10 +533,12 @@ export const printBar = (cart)=>{
    } catch (error) {
    console.log("Print failed:", error);
    }
+  }
  }
  
 
  export const printChecker = (cart)=>{
+  /* */
   cashier.clear();
    const datetime = cart.datetime_data.time_in
    const time_in = datetime.toLocaleTimeString();
@@ -527,7 +591,7 @@ export const printBar = (cart)=>{
      })
      cashier.drawLine();
    });
-   cashier.cut();
+   cashier.partialCut();
  
    
    

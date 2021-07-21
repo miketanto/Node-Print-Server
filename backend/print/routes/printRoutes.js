@@ -1,5 +1,5 @@
 import express from 'express';
-import { printAll_C, printBill_C, printFinalBill_C, printKitchen_C, printSplitBill_C, printVoid_C } from '../controllers/printControllers.js';
+import { printAll_C, printBill_C, printFinalBill_C, printKitchen_C, printSplitBill_C, printVoid_C, saveTaxFile } from '../controllers/printControllers.js';
 
 const router = express.Router()
 
@@ -14,5 +14,8 @@ router.post('/splitbill',printSplitBill_C)
 router.post('/all',printAll_C)
 
 router.post('/voidItem',printVoid_C)
+
+router.post('/saveTaxFile',saveTaxFile)
+
 
 export default router
